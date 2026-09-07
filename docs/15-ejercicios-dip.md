@@ -1,4 +1,4 @@
-# 14 — Ejercicios DIP
+# 15 — Ejercicios DIP
 
 ## 1. Reportes y base de datos
 Ruta: `exercises/dip/ex01`

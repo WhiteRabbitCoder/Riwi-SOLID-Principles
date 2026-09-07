@@ -16,6 +16,29 @@ El repositorio está pensado para trabajarse por etapas: primero fundamentos de 
 - Cómo detectar problemas de diseño antes de refactorizar.
 - Cómo aplicar SOLID sin convertir el proyecto en una colección innecesaria de interfaces y clases.
 
+## Contenido
+
+| # | Material |
+| --- | --- |
+| 00 | [Instalación de Java e IDE](docs/00-instalacion-java-ide.md) |
+| 01 | [POO](docs/01-poo.md) |
+| 02 | [Clases y objetos](docs/02-clases-y-objetos.md) |
+| 03 | [Interfaces y polimorfismo](docs/03-interfaces-y-polimorfismo.md) |
+| 04 | [Single Responsibility Principle](docs/04-srp.md) |
+| 05 | [Ejercicios SRP](docs/05-ejercicios-srp.md) |
+| 06 | [Open/Closed Principle](docs/06-ocp.md) |
+| 07 | [Ejercicios OCP](docs/07-ejercicios-ocp.md) |
+| 08 | [Reto SRP + OCP](docs/08-reto-final.md) |
+| 09 | [Liskov Substitution Principle](docs/09-lsp.md) |
+| 10 | [Ejercicios LSP](docs/10-ejercicios-lsp.md) |
+| 11 | [Interface Segregation Principle](docs/11-isp.md) |
+| 12 | [Ejercicios ISP](docs/12-ejercicios-isp.md) |
+| 13 | [Arquitectura hexagonal](docs/13-arquitectura-hexagonal.md) |
+| 14 | [Dependency Inversion Principle](docs/14-dip.md) |
+| 15 | [Ejercicios DIP](docs/15-ejercicios-dip.md) |
+| 16 | [Proyecto integrador](docs/16-proyecto-integrador.md) |
+| 17 | [Presentación OCP, ISP y LSP](docs/17-presentacion-ocp-isp-lsp.html) |
+
 ## Requisitos
 
 - Java 17 o superior.
@@ -73,6 +96,9 @@ Riwi - SOLID Principles/
 │   │   ├── isp/
 │   │   └── dip/
 │   └── integrator/
+├── hexagonal-architecture/
+│   ├── src/
+│   └── README.md
 ├── .vscode/settings.json
 └── README.md
 ```
