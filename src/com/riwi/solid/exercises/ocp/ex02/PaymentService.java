@@ -1,5 +1,7 @@
 package com.riwi.solid.exercises.ocp.ex02;
 
+import com.riwi.solid.exercises.ocp.ex02.solution.PaymentInterface;
+
 /**
  * EJERCICIO OCP 02
  *
@@ -7,14 +9,7 @@ package com.riwi.solid.exercises.ocp.ex02;
  * Diseña una alternativa extensible.
  */
 public class PaymentService {
-
-    public void processPayment(String type, double amount) {
-        if ("CARD".equals(type)) {
-            System.out.println("Pagando " + amount + " con tarjeta");
-        } else if ("CASH".equals(type)) {
-            System.out.println("Pagando " + amount + " en efectivo");
-        } else if ("BANK_TRANSFER".equals(type)) {
-            System.out.println("Pagando " + amount + " por transferencia");
-        }
+    public void processPayment(PaymentInterface paymentMethod, double amount) {
+        paymentMethod.processPayment(amount);
     }
 }

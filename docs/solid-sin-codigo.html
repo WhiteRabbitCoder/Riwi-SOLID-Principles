@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOLID sin código</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root {
+    --bg:        #E7ECF1;
+    --surface:   #FDFEFF;
+    --surface-2: #F1F5F8;
+    --ink:       #0E1A26;
+    --muted:     #55697C;
+    --rule:      #C3D0DC;
+    --accent:    #14549B;
+    --accent-soft:#DCE8F5;
+    --bad:       #A33520;
+    --bad-soft:  #F6E3DE;
+    --good:      #14705A;
+    --good-soft: #DDEFE8;
+    --shadow:    0 1px 2px rgba(14, 26, 38, .06), 0 8px 24px rgba(14, 26, 38, .05);
+
+    --step--1: clamp(.84rem, .82rem + .1vw, .9rem);
+    --step-0:  clamp(1.02rem, .99rem + .16vw, 1.14rem);
+    --step-1:  clamp(1.22rem, 1.15rem + .34vw, 1.45rem);
+    --step-2:  clamp(1.5rem, 1.35rem + .7vw, 2rem);
+    --step-3:  clamp(2rem, 1.66rem + 1.6vw, 3.1rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #0C131A;
+      --surface:   #141F2A;
+      --surface-2: #1B2836;
+      --ink:       #E5EDF5;
+      --muted:     #93A6B8;
+      --rule:      #2A3B4C;
+      --accent:    #74AEEC;
+      --accent-soft:#1A2E44;
+      --bad:       #E5947C;
+      --bad-soft:  #33211C;
+      --good:      #5FC7A4;
+      --good-soft: #16302A;
+      --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:        #0C131A;
+    --surface:   #141F2A;
+    --surface-2: #1B2836;
+    --ink:       #E5EDF5;
+    --muted:     #93A6B8;
+    --rule:      #2A3B4C;
+    --accent:    #74AEEC;
+    --accent-soft:#1A2E44;
+    --bad:       #E5947C;
+    --bad-soft:  #33211C;
+    --good:      #5FC7A4;
+    --good-soft: #16302A;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.1rem, 4vw, 2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  h1, h2, h3, h4, .eyebrow, .label, .mini {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1 { font-size: var(--step-3); font-weight: 800; line-height: 1.02; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
+  h2 { font-size: var(--step-2); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+  h4 { font-size: var(--step-0); font-weight: 600; line-height: 1.3; margin: 0; }
+  p  { margin: 0; }
+
+  .eyebrow {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  /* ---------- portada ---------- */
+
+  .hero { display: flex; flex-direction: column; gap: 1.1rem; }
+  .hero p.lede { font-size: var(--step-1); color: var(--muted); max-width: 36ch; }
+  .hero .meta { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: .9rem; }
+
+  /* ---------- índice ---------- */
+
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  nav.toc li { border-bottom: 1px solid var(--rule); }
+  nav.toc li:first-child { border-top: 1px solid var(--rule); }
+  nav.toc a {
+    display: grid;
+    grid-template-columns: 1.8rem 1fr;
+    gap: .9rem;
+    align-items: baseline;
+    padding: .7rem 0;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc .k { font-family: Archivo, sans-serif; font-weight: 800; color: var(--accent); font-size: var(--step-1); line-height: 1; }
+  nav.toc .d { font-size: var(--step--1); color: var(--muted); }
+
+  /* ---------- bloques de texto ---------- */
+
+  .prose { display: flex; flex-direction: column; gap: 1rem; }
+
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .glossary div { background: var(--surface); padding: 1rem 1.05rem; display: flex; flex-direction: column; gap: .3rem; }
+  .glossary dt { font-family: Archivo, sans-serif; font-weight: 600; font-size: var(--step--1); letter-spacing: .02em; }
+  .glossary dd { margin: 0; font-size: var(--step--1); color: var(--muted); line-height: 1.5; }
+
+  /* ---------- caso por principio ---------- */
+
+  .case { display: flex; flex-direction: column; gap: 1.7rem; scroll-margin-top: 1.5rem; }
+
+  .case-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 1.1rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .letter {
+    font-family: Archivo, sans-serif;
+    font-weight: 800;
+    font-size: clamp(3rem, 9vw, 4.6rem);
+    line-height: .8;
+    color: var(--accent);
+    letter-spacing: -.05em;
+  }
+  .case-head .titles { display: flex; flex-direction: column; gap: .3rem; }
+  .case-head .titles .sub { color: var(--muted); font-size: var(--step--1); }
+
+  .beat { display: flex; flex-direction: column; gap: .8rem; }
+  .beat > .label {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .beat > .label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+
+  /* ---------- antes / después ---------- */
+
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    box-shadow: var(--shadow);
+  }
+  .panel .tag {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .2rem .5rem;
+    border-radius: 3px;
+    align-self: flex-start;
+  }
+  .panel.before .tag { background: var(--bad-soft); color: var(--bad); }
+  .panel.after  .tag { background: var(--good-soft); color: var(--good); }
+  .panel p { font-size: var(--step--1); color: var(--muted); line-height: 1.55; }
+
+  .flow { display: flex; flex-direction: column; gap: .4rem; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .76rem; line-height: 1.45; }
+  .flow span { padding: .4rem .6rem; border-radius: 3px; background: var(--surface-2); border-left: 3px solid var(--rule); }
+  .panel.before .flow span.hot { background: var(--bad-soft); border-left-color: var(--bad); color: var(--bad); }
+  .panel.after  .flow span.cool { background: var(--good-soft); border-left-color: var(--good); color: var(--good); }
+  .flow span.plus { border-left-style: dashed; color: var(--muted); }
+
+  /* ---------- pasos ---------- */
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: .85rem; }
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    gap: .85rem;
+    align-items: baseline;
+  }
+  ol.steps li::before {
+    content: counter(s);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    text-align: center;
+    padding: .15rem 0;
+  }
+
+  ul.checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+  ul.checks li { display: grid; grid-template-columns: 1.1rem 1fr; gap: .7rem; align-items: baseline; font-size: var(--step--1); }
+  ul.checks li::before { content: "✓"; color: var(--good); font-weight: 700; }
+  ul.checks.warn li::before { content: "✗"; color: var(--bad); }
+
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: .9rem 1.1rem;
+    border-radius: 0 4px 4px 0;
+    font-size: var(--step--1);
+    line-height: 1.55;
+  }
+  .note strong { font-family: Archivo, sans-serif; font-weight: 600; }
+
+  .analogy {
+    font-size: var(--step-1);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.1rem 0;
+    max-width: 34ch;
+  }
+
+  /* ---------- ejercicios a detalle ---------- */
+
+  .exercises { display: flex; flex-direction: column; gap: 1rem; }
+
+  .ex {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    box-shadow: var(--shadow);
+    padding: 1.2rem 1.25rem 1.35rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .ex-title {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .8rem;
+    align-items: baseline;
+    padding-bottom: .8rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .ex-title .n {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    padding: .18rem .45rem;
+    letter-spacing: .04em;
+  }
+  .ex-step { display: flex; flex-direction: column; gap: .35rem; }
+  .ex-step p { font-size: var(--step--1); line-height: 1.6; }
+  .ex-step p.body { color: var(--muted); }
+  .mini { font-size: .7rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; }
+  .mini.c { color: var(--accent); }
+  .mini.p { color: var(--bad); }
+  .mini.s { color: var(--good); }
+
+  ol.micro { margin: .15rem 0 0; padding: 0 0 0 .1rem; list-style: none; counter-reset: m; display: flex; flex-direction: column; gap: .4rem; }
+  ol.micro li {
+    counter-increment: m;
+    display: grid;
+    grid-template-columns: 1.15rem 1fr;
+    gap: .6rem;
+    align-items: baseline;
+    font-size: var(--step--1);
+    line-height: 1.55;
+    color: var(--muted);
+  }
+  ol.micro li::before {
+    content: counter(m) ".";
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .72rem;
+    color: var(--good);
+    font-weight: 600;
+  }
+
+  .ex.trap { border-color: var(--accent); border-width: 2px; background: var(--accent-soft); }
+  .ex.trap .ex-title { border-bottom-color: var(--accent); }
+  .ex.trap .ex-step p.body { color: var(--ink); }
+
+  /* ---------- tabla final ---------- */
+
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 32rem; font-size: var(--step--1); }
+  th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: Archivo, sans-serif; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: .72rem; color: var(--muted); }
+  td:last-child { font-family: Archivo, sans-serif; font-weight: 800; color: var(--accent); white-space: nowrap; font-size: var(--step-0); }
+
+  footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1.2rem; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Riwi · Diseño de software</p>
+    <h1>SOLID sin código</h1>
+    <p class="lede">Cinco reglas para armar cosas que se puedan cambiar sin romperlas. Con los 25 ejercicios del curso explicados paso a paso, sin escribir una sola línea.</p>
+    <p class="meta">No hace falta saber programar · las cinco reglas valen igual en Java, JavaScript, Python o cualquier otro lenguaje</p>
+  </header>
+
+  <section class="prose">
+    <h2>Antes de empezar: cuatro palabras</h2>
+    <p>Todo lo que sigue usa solo estas cuatro ideas. No hay más vocabulario en toda la página, y ninguna es de un lenguaje en particular.</p>
+    <dl class="glossary">
+      <div>
+        <dt>Pieza</dt>
+        <dd>Algo que hace un trabajo concreto: "enviar un correo", "cobrar con tarjeta", "imprimir una hoja".</dd>
+      </div>
+      <div>
+        <dt>Promesa</dt>
+        <dd>Lo que una pieza garantiza que sabe hacer. Es un acuerdo: "yo sé enviar un mensaje".</dd>
+      </div>
+      <div>
+        <dt>Quien la usa</dt>
+        <dd>Otra parte del sistema que le pide algo a la pieza confiando en su promesa.</dd>
+      </div>
+      <div>
+        <dt>Variación</dt>
+        <dd>Lo que cambia de un caso a otro. El aviso siempre se envía; lo que cambia es por dónde.</dd>
+      </div>
+    </dl>
+    <p>Un <strong>principio de diseño</strong> no es una regla técnica ni una ley. Es un consejo probado sobre cómo repartir el trabajo entre las piezas, para que mañana puedas cambiar una cosa sin tener que tocar otras diez. SOLID son cinco de esos consejos, y la palabra se arma con la inicial de cada uno.</p>
+
+    <nav class="toc">
+      <ol>
+        <li><a href="#srp"><span class="k">S</span><span><strong>Una pieza, un motivo para cambiar</strong><br><span class="d">Separar lo que se mezcló · 5 ejercicios</span></span></a></li>
+        <li><a href="#ocp"><span class="k">O</span><span><strong>Agregar sin volver a tocar</strong><br><span class="d">Crecer sin editar lo que ya funcionaba · 5 ejercicios</span></span></a></li>
+        <li><a href="#lsp"><span class="k">L</span><span><strong>Si prometes por todos, cúmplelo por todos</strong><br><span class="d">Familias sin excepciones · 5 ejercicios</span></span></a></li>
+        <li><a href="#isp"><span class="k">I</span><span><strong>No firmes lo que no puedes cumplir</strong><br><span class="d">Promesas del tamaño justo · 5 ejercicios</span></span></a></li>
+        <li><a href="#dip"><span class="k">D</span><span><strong>Pide lo que necesitas, no lo fabriques</strong><br><span class="d">Quién decide con qué se trabaja · 5 ejercicios</span></span></a></li>
+      </ol>
+    </nav>
+  </section>
+
+  <!-- ============ SRP ============ -->
+
+  <article class="case" id="srp">
+    <div class="case-head">
+      <div class="letter">S</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de responsabilidad única</p>
+        <h2>Una pieza, un motivo para cambiar</h2>
+        <p class="sub">Alta de usuarios · registro · reportes · pedidos · un rectángulo</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué dice, en una frase</p>
+      <p>Cada pieza debe tener <strong>un solo motivo para que alguien pida cambiarla</strong>.</p>
+      <p>Ojo con la palabra: <em>motivos</em>, no tareas. Una pieza puede hacer cinco cosas y estar perfecta, si esas cinco cosas cambian siempre juntas y por la misma razón.</p>
+      <p>La prueba práctica es preguntar <strong>quién</strong> pediría el cambio. Si el área de ventas puede pedir un cambio en la misma pieza que el área de sistemas y que la de comunicaciones, ahí hay tres piezas revueltas en una sola.</p>
+      <p class="analogy">Un empleado que atiende la caja, lleva la contabilidad y además arregla la impresora. El día que falta, se cae todo a la vez.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span class="hot">una sola pieza: crear + guardar + avisar</span>
+          <span class="plus">cambia el texto del correo → hay que abrirla</span>
+          <span class="plus">cambia dónde se guarda → hay que abrirla</span>
+        </div>
+        <p>Tres áreas distintas empujan la misma pieza. Cada cambio arriesga lo que no tenía nada que ver.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">coordinador: llama a las tres en orden</span>
+          <span>pieza que crea</span>
+          <span>pieza que guarda</span>
+          <span>pieza que avisa</span>
+        </div>
+        <p>Cada cambio cae en una sola pieza. El coordinador solo ordena los pasos; no tiene reglas propias.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo aplicarlo, en cualquier lenguaje</p>
+      <ol class="steps">
+        <li>Escribe con frases sueltas todo lo que hace la pieza. Una frase por cosa que hace.</li>
+        <li>Al lado de cada frase anota quién pediría que eso cambie: ¿ventas? ¿sistemas? ¿el área legal?</li>
+        <li>Los nombres que se repiten son una misma responsabilidad. Los nombres distintos, responsabilidades distintas.</li>
+        <li>Saca cada responsabilidad a su propia pieza, con un nombre que diga exactamente qué hace.</li>
+        <li>Deja una pieza que solo llame a las otras en orden. Si a esa pieza empiezan a salirle reglas propias, se te volvió a mezclar todo.</li>
+      </ol>
+    </div>
+
+    <div class="beat">
+      <p class="label">Los cinco ejercicios, a detalle</p>
+      <div class="exercises">
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">01</span><h4>Alta de usuarios</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Hay una pieza encargada de dar de alta a alguien. Hace tres cosas: registra al usuario, lo guarda en el sistema, y le envía el correo de bienvenida. Funciona bien y nadie se queja.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El área de comunicaciones quiere cambiar el texto del correo. Para eso hay que abrir la misma pieza donde vive el guardado de datos. Un error de dedo mientras se edita el saludo puede dejar usuarios sin guardar. Tres áreas distintas de la empresa tienen motivos para tocar el mismo sitio, y ninguna sabe lo que hacen las otras dos.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Listar lo que hace: crea, guarda, avisa. Tres frases.</li>
+              <li>Preguntar quién pediría cambiar cada una. Salen tres dueños distintos: producto, sistemas y comunicaciones.</li>
+              <li>Sacar cada frase a su propia pieza, con el nombre de lo que hace.</li>
+              <li>Dejar una cuarta pieza que solo las llama en orden: primero crear, luego guardar, luego avisar. Nada más.</li>
+            </ol>
+            <p class="body">Ahora el cambio del correo toca una sola pieza, y el guardado ni se entera.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">02</span><h4>Registro de usuarios</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Muy parecido al anterior: una pieza que registra a la persona, guarda sus datos en una base de datos concreta y le manda el correo. Pero este ejercicio viene con una pregunta clavada: <em>si mañana la empresa cambia de sistema de base de datos, ¿cuántas piezas hay que revisar?</em></p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Tal como está, la respuesta es "esta pieza entera". Y esa pieza también contiene el saludo de bienvenida y las reglas del registro, que no tienen absolutamente nada que ver con la base de datos. Quien haga la migración tiene que leer y entender cosas que no le importan, y puede romperlas.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Separar en tres: las reglas del registro, el guardado, y el aviso.</li>
+              <li>Que la pieza de guardado sea la única que menciona la tecnología de base de datos.</li>
+              <li>Que el coordinador siga llamando a las tres en el mismo orden de siempre.</li>
+            </ol>
+            <p class="body">Ahora la respuesta a la pregunta es "una pieza". Ese cambio de "toda la pieza" a "una pieza" es, literalmente, toda la ganancia del principio.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">03</span><h4>Sistema de reportes</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una pieza que hace un reporte mensual: saca el promedio de unos números, arma con eso algo presentable para mostrar en pantalla, lo guarda, y se lo manda por correo a la jefatura.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Son cuatro trabajos que no se parecen en nada. Sacar un promedio es matemática; armar la presentación es diseño; guardar es infraestructura; enviar es comunicación. Cada uno cambia por su cuenta y a su ritmo, pero los cuatro viven en el mismo sitio. Además, nadie puede reusar el cálculo del promedio sin arrastrar también el correo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Una pieza que calcula. Una que presenta. Una que guarda. Una que envía.</li>
+              <li>Comprobar el trabajo con esta regla: si no puedes explicar qué hace una pieza en una sola frase corta, todavía tiene cosas de más.</li>
+              <li>El flujo del reporte encadena las cuatro y no aporta reglas propias.</li>
+            </ol>
+            <p class="body">Como bonus, ahora el cálculo del promedio se puede usar en otro reporte sin arrastrar nada.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">04</span><h4>Tienda y pedidos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una pieza maneja la compra completa: suma el total de los productos, revisa que haya inventario, guarda el pedido, manda la confirmación al cliente e imprime la factura.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Es el caso más grave de todos porque son cinco responsabilidades, cada una con su propio dueño en la empresa: finanzas define los totales, bodega define el inventario, sistemas define el guardado, comunicaciones define el correo, y contabilidad define la factura. Cinco áreas empujando el mismo archivo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Cinco piezas, una por responsabilidad, cada una con nombre propio.</li>
+              <li>Un flujo de compra que las llama en orden y decide qué pasa si no hay inventario.</li>
+              <li>Hacerse la pregunta de cierre del ejercicio con honestidad: <em>¿de verdad hacían falta las cinco?</em></li>
+            </ol>
+            <p class="body">Aquí la respuesta es sí, porque cada una cambia por su cuenta y responde a un área distinta. Pero la pregunta hay que hacérsela siempre — y el ejercicio que sigue muestra por qué.</p>
+          </div>
+        </div>
+
+        <div class="ex trap">
+          <div class="ex-title"><span class="n">05</span><h4>Un rectángulo — la trampa del curso</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una pieza que representa un rectángulo. Calcula su área, calcula su perímetro, y permite cambiarle las medidas. Tres tareas a la vista.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body"><strong>Nada.</strong> Este ejercicio es una trampa deliberada. Después de resolver los cuatro anteriores, la tentación es partir todo lo que tenga más de una tarea, y aquí se ven tres.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <p class="body">No dividiéndola. Las tres tareas usan los mismos dos datos —ancho y alto— y cambian siempre juntas: si mañana el rectángulo pasa a manejar decimales, las tres se ven afectadas a la vez. Hay <em>una sola</em> razón de cambio.</p>
+            <p class="body">Partirla daría tres piezas que se pasan los mismos números entre sí para hacer una multiplicación. Más nombres que recordar, más archivos que abrir, cero beneficio.</p>
+            <ol class="micro">
+              <li>Aplicar la prueba de siempre: ¿quién pediría cambiar esto? Una sola respuesta para las tres tareas.</li>
+              <li>Dejar la pieza tal como está y poder defender por qué.</li>
+            </ol>
+            <p class="body">Este ejercicio existe para enseñar que el principio habla de <strong>motivos de cambio</strong>, no de cantidad de tareas. Separar de más también es un error de diseño.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </article>
+
+  <!-- ============ OCP ============ -->
+
+  <article class="case" id="ocp">
+    <div class="case-head">
+      <div class="letter">O</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de abierto/cerrado</p>
+        <h2>Agregar sin volver a tocar</h2>
+        <p class="sub">Avisos · pagos · exportar archivos · envíos · ataques</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué dice, en una frase</p>
+      <p>Un sistema debería poder <strong>crecer sumando cosas nuevas, sin editar las que ya funcionaban</strong>.</p>
+      <p>El síntoma es siempre el mismo y se reconoce a simple vista: una instrucción que decide preguntando <em>¿es esto? ¿es aquello? ¿es lo otro?</em>, y a la que hay que agregarle una pregunta más cada vez que aparece un caso nuevo.</p>
+      <p>Ese "agregarle una pregunta más" es el problema. Cada vez que abres algo que ya servía, puedes romperlo sin darte cuenta — y toca volver a probar todo lo que había, no solo lo nuevo.</p>
+      <p class="analogy">Es como tener una sola llave a la que le vas limando dientes nuevos cada vez que aparece una puerta.</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">La idea que lo arregla</p>
+      <p>Separa <strong>lo que siempre pasa</strong> de <strong>lo que cambia</strong>. En los avisos de una tienda: lo que siempre pasa es avisarle al cliente; lo que cambia es el canal por donde le llega.</p>
+      <p>Entonces escribes una promesa que todos los casos puedan cumplir —<em>"cualquier cosa que quiera llamarse avisador tiene que saber enviar un mensaje"</em>— y cada canal se convierte en una pieza que la cumple a su manera.</p>
+      <p>Y quien coordina deja de preguntar. Solo dice: "toma este mensaje y envíalo". Ni sabe ni le importa quién lo recibe.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span class="hot">¿es correo? → mándalo por correo</span>
+          <span class="hot">¿es texto? → mándalo por texto</span>
+          <span class="plus">+ WhatsApp: abrir esto y editarlo</span>
+        </div>
+        <p>Una pieza que lo sabe todo y crece sin parar. Agregar = modificar lo que ya funcionaba.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">coordinador → "envía este mensaje"</span>
+          <span>avisador por correo</span>
+          <span>avisador por texto</span>
+          <span class="plus">+ WhatsApp: pieza nueva, nada se edita</span>
+        </div>
+        <p>Piezas independientes que cumplen la misma promesa. Agregar = sumar una pieza.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo aplicarlo, en cualquier lenguaje</p>
+      <ol class="steps">
+        <li>Busca la instrucción que crece con preguntas encadenadas. Esa es la señal, y es inconfundible.</li>
+        <li>Pregúntate qué es lo que en realidad cambia entre una pregunta y otra, y ponle un nombre: "el canal", "el medio de pago", "el formato".</li>
+        <li>Escribe la promesa mínima que <em>todos</em> los casos pueden cumplir. Solo eso, nada de extras.</li>
+        <li>Convierte cada rama de la pregunta en una pieza aparte que cumpla esa promesa.</li>
+        <li>Haz que quien coordina reciba la pieza ya elegida, en vez de elegirla él mismo preguntando.</li>
+      </ol>
+      <ul class="checks">
+        <li>Funcionó si agregas un caso nuevo creando algo nuevo, sin editar nada viejo.</li>
+        <li>Funcionó si quien coordina no menciona por su nombre a ninguna variante.</li>
+      </ul>
+    </div>
+
+    <div class="beat">
+      <p class="label">Los cinco ejercicios, a detalle</p>
+      <div class="exercises">
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">01</span><h4>Avisos al cliente</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una tienda avisa al cliente cuando su pedido queda listo. Hoy el aviso sale por correo o por mensaje de texto, y una sola instrucción decide cuál preguntando por el tipo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Llega WhatsApp y hay que abrir esa instrucción para meterle otra pregunta. Luego llega la notificación del celular: otra más. La lista crece, nadie la lee completa, y cada vez que se toca hay que volver a probar los canales que ya funcionaban.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Nombrar lo que varía: el canal.</li>
+              <li>Escribir la promesa: "sé enviar un mensaje". Es lo único que todos los canales pueden cumplir.</li>
+              <li>Convertir cada canal en su propia pieza que cumple esa promesa.</li>
+              <li>Que el coordinador reciba el avisador ya elegido y solo diga "envía esto".</li>
+            </ol>
+            <p class="body">La prueba de que funcionó: agregar WhatsApp es crear una pieza nueva. Ningún archivo existente se abre.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">02</span><h4>Métodos de pago</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Al cobrar, una instrucción pregunta si el pago es con tarjeta, en efectivo o por transferencia, y actúa según la respuesta.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">En un negocio real esa lista nunca para de crecer: aparecen billeteras digitales, pagos contra entrega, pagos en cuotas. Y aquí el riesgo es mayor que en los avisos, porque estamos tocando dinero: cada vez que se abre la instrucción para agregar un medio, se pone en riesgo el cobro de los que ya funcionaban.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Nombrar lo que varía: el medio de pago.</li>
+              <li>Promesa: "sé cobrar un monto". Cada medio la cumple a su manera.</li>
+              <li>Una pieza por medio, y quien cobra recibe la que le pasaron.</li>
+            </ol>
+            <p class="body">Sumar una billetera digital deja intactos los medios que ya cobraban bien. Nadie tiene que volver a probarlos.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">03</span><h4>Exportar archivos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">El sistema puede entregar un documento en dos formatos distintos de archivo. Una instrucción pregunta cuál y arma el archivo correspondiente.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El siguiente pedido del cliente son tres formatos más. Y los formatos son de las cosas que más se piden: cada área quiere el suyo. La instrucción se convierte en el sitio por donde pasa todo el mundo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Nombrar lo que varía: el formato de salida.</li>
+              <li>Promesa: "sé convertir estos datos en un archivo".</li>
+              <li>Un formato, una pieza. El resto del sistema nunca aprende cuántos formatos existen.</li>
+            </ol>
+            <p class="body">Detalle importante: quien pide el archivo tampoco necesita saber la lista. Solo pide "el archivo en este formato" y recibe lo que sea.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">04</span><h4>Cálculo de envíos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">El costo del envío depende de la modalidad: la estándar cobra un valor por kilo, la express cobra otro. Una instrucción pregunta la modalidad y aplica la cuenta correspondiente.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Aquí lo que varía no es una acción sino una <strong>fórmula</strong>, y eso confunde a mucha gente: parece que no hay nada que separar porque "es solo una multiplicación". Pero la entrega en el día tiene un recargo fijo además del peso, y la entrega con dron cobra por distancia. Las fórmulas se vuelven distintas entre sí, y todas viven en el mismo sitio.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Reconocer que la fórmula misma es lo que varía. Una fórmula también puede ser una pieza.</li>
+              <li>Promesa: "dime cuánto cuesta enviar este peso".</li>
+              <li>Cada modalidad se lleva su propia cuenta adentro, con los recargos que necesite.</li>
+              <li>Quien cotiza el envío solo pide un precio y no conoce ninguna tarifa.</li>
+            </ol>
+            <p class="body">Lección extra: cuando el área comercial cambie la tarifa express, se toca un solo sitio y no hay riesgo de mover por error la estándar.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">05</span><h4>Ataques de un videojuego</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Un personaje puede atacar con espada, con magia o con arco. Una instrucción pregunta el tipo de ataque y ejecuta el efecto correspondiente.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Los videojuegos son el ejemplo más extremo de este problema, porque el contenido crece sin parar por diseño: cada actualización trae ataques nuevos. Un juego con veinte ataques tendría una lista de preguntas imposible de leer, y agregar el ataque de hielo obligaría a revisar que la espada siga funcionando.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Nombrar lo que varía: el ataque, con su efecto y su daño.</li>
+              <li>Promesa: "sé ejecutar mi efecto".</li>
+              <li>Cada ataque es una pieza que se lleva su propio comportamiento adentro.</li>
+              <li>El personaje solo sabe "ejecutar el ataque que me pasaron", y no tiene la lista de ataques del juego.</li>
+            </ol>
+            <p class="body">Ahora un diseñador puede agregar hielo o electricidad sin que nadie revise la espada. Este es el caso donde el beneficio se nota más rápido, porque las variantes se cuentan por decenas.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="note"><strong>Cuándo NO aplicarlo.</strong> Si de verdad solo va a existir un caso y nunca habrá otro, esta separación sobra y solo agrega nombres que aprender. El principio sirve cuando la variación es real, no cuando te la imaginas.</div>
+    </div>
+  </article>
+
+  <!-- ============ LSP ============ -->
+
+  <article class="case" id="lsp">
+    <div class="case-head">
+      <div class="letter">L</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de sustitución de Liskov</p>
+        <h2>Si prometes por todos, cúmplelo por todos</h2>
+        <p class="sub">Aves · figuras · cuentas bancarias · pagos · archivos</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué dice, en una frase</p>
+      <p>Cuando agrupas piezas en una familia, <strong>cualquier miembro tiene que poder ocupar el lugar de otro sin dar sorpresas</strong>. Si uno solo no puede cumplir lo que la familia prometió, la promesa estaba mal escrita.</p>
+      <p>El caso clásico: la familia "ave" promete volar. Suena razonable, hasta que llega el pingüino. Es un ave —pertenece a la familia sin discusión— y no vuela. Cuando alguien le pide volar, falla.</p>
+      <p>Lo grave no es el pingüino. Es que ahora nadie puede confiar en la palabra "ave". Todo el que reciba una termina preguntando <em>"oye, ¿tú de casualidad eres pingüino?"</em> antes de pedirle nada. Esa pregunta se repite por todo el sistema, y hay que agregarla otra vez con cada caso raro que aparezca.</p>
+      <p class="analogy">Un juego de llaves maestras que abre todas las puertas del edificio. Menos una. ¿De qué te sirve ahora la palabra "maestra"?</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span>familia "ave" promete: volar</span>
+          <span>gorrión: vuela ✓</span>
+          <span class="hot">pingüino: falla al intentarlo</span>
+          <span class="plus">quien la usa debe preguntar "¿qué eres?"</span>
+        </div>
+        <p>La familia promete de más. La excepción contamina a todo el que use la familia.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">familia "ave" promete: desplazarse</span>
+          <span>promesa aparte: volar</span>
+          <span>gorrión: ave + vuela</span>
+          <span>pingüino: ave (y ya)</span>
+        </div>
+        <p>Cualquier miembro sirve donde se pide la familia. Sin excepciones y sin preguntas.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo aplicarlo, en cualquier lenguaje</p>
+      <ol class="steps">
+        <li>Escribe en una frase qué promete la familia. Si no puedes escribirla, ese ya es el problema.</li>
+        <li>Recorre uno por uno los miembros y pregunta: <em>¿este cumple la frase completa, siempre, sin peros?</em></li>
+        <li>Al primer "sí, pero…", encontraste la promesa que sobra.</li>
+        <li>Sácala de la familia y conviértela en una capacidad aparte, que cada miembro firma o no.</li>
+        <li>Haz que quien necesitaba esa capacidad la pida por su nombre, en vez de pedir la familia entera y cruzar los dedos.</li>
+      </ol>
+      <div class="note"><strong>Ojo con la trampa fácil.</strong> Atrapar el error y callarlo no arregla nada: la promesa sigue siendo falsa, solo que ahora falla en silencio, que es peor. Hay que corregir la promesa, no esconder el incumplimiento.</div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Los cinco ejercicios, a detalle</p>
+      <div class="exercises">
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">01</span><h4>Aves y vuelo</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Hay una familia llamada "ave" y de ella salen el gorrión, el águila y el pingüino. La familia promete una cosa: volar.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El pingüino no vuela. Cuando alguien que recibió "un ave" le pide volar, el programa se cae. La promesa de la familia era mentira desde el día en que se escribió — el pingüino solo la puso en evidencia.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Escribir la promesa de la familia: "toda ave vuela".</li>
+              <li>Revisar miembro por miembro. El pingüino responde "no". Ahí está la promesa que sobra.</li>
+              <li>Bajar la promesa de la familia a lo que <em>todas</em> cumplen: desplazarse, alimentarse.</li>
+              <li>Convertir volar en una capacidad aparte, que firman el gorrión y el águila.</li>
+              <li>Quien organiza una migración pide "algo que vuele"; el pingüino nunca llega ahí.</li>
+            </ol>
+            <p class="body">Nadie tuvo que preguntarle a nadie qué es. La estructura misma impide el error.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">02</span><h4>Rectángulos y cuadrados</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">En la escuela enseñan que un cuadrado es un rectángulo con los lados iguales. Suena lógico copiar esa relación: el cuadrado sale de la familia "rectángulo".</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El rectángulo le promete a quien lo usa que puede cambiar el ancho sin tocar el alto. El cuadrado, para seguir siendo cuadrado, tiene que cambiar los dos a la vez. Entonces alguien pide ancho 5 y alto 4, y recibe un área de 16 en vez de 20. Nadie falló, nadie mostró un error: simplemente el resultado está mal, en silencio.</p>
+            <p class="body">Y esa es la parte importante: aquí la promesa rota no es un método que no existe, es una <em>expectativa</em> sobre cómo se comporta.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Escribir la promesa real del rectángulo: "puedes cambiar cada medida por separado".</li>
+              <li>Comprobar si el cuadrado la cumple. No la cumple.</li>
+              <li>Sacar al cuadrado de esa familia. Ambos pasan a ser "figuras que saben decir su área".</li>
+              <li>Fijar las medidas al momento de crear la figura, en vez de cambiarlas después.</li>
+            </ol>
+            <p class="body">La lección de este ejercicio es la más valiosa del curso: una relación puede ser <strong>cierta en matemáticas y falsa en el diseño</strong>. Lo que manda no es la definición del diccionario, sino lo que se le prometió a quien va a usar la pieza.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">03</span><h4>Cuentas bancarias</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una familia "cuenta bancaria" con depósito, consulta de saldo y retiro. De ella sale la cuenta de ahorros y también la cuenta a plazo fijo, esa donde el dinero queda inmovilizado hasta una fecha.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">La cuenta a plazo fijo no permite retirar antes del vencimiento — y no por un problema técnico, sino porque <em>ese es el producto</em>. Al obligarla a heredar el retiro, hay que hacerla fallar. Cualquier pantalla que reciba "una cuenta" y ofrezca el botón de retirar puede reventar según qué cuenta le tocó.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Escribir qué promete la familia y revisar cada miembro. El retiro es lo que no todos cumplen.</li>
+              <li>Dejar en la familia lo común: depositar y consultar el saldo.</li>
+              <li>Volver el retiro una capacidad aparte que firma la cuenta de ahorros y no la de plazo fijo.</li>
+              <li>La pantalla de retiros pide "algo de donde se pueda retirar", no "una cuenta".</li>
+            </ol>
+            <p class="body">Una regla del negocio que antes vivía escondida como un error, ahora está escrita en la estructura y se ve a simple vista.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">04</span><h4>Pagos y reembolsos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una familia "pago" que promete dos cosas: cobrar y devolver el dinero. De ella salen el pago con tarjeta y el pago en efectivo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">La tarjeta devuelve por el mismo canal sin problema. El efectivo no: una devolución en efectivo es un proceso distinto, manual, en caja. Así que el pago en efectivo tiene que rechazar la devolución que heredó. El área de servicio al cliente descubre esto cuando ya prometió una devolución al cliente.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Revisar la promesa: cobrar la cumplen los dos, devolver no.</li>
+              <li>Dejar cobrar en la familia.</li>
+              <li>Volver la devolución una capacidad aparte, firmada solo por los medios que la soportan.</li>
+              <li>Quien procesa devoluciones pide "algo que sepa devolver" y el efectivo nunca llega a esa pantalla.</li>
+            </ol>
+            <p class="body">Fíjate en el patrón: es exactamente el mismo movimiento que en las aves y en las cuentas. Cuando lo reconoces una vez, lo ves en todas partes.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">05</span><h4>Archivos de solo lectura</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Hay un archivo que se puede leer y escribir. Y hay archivos de solo lectura, como un manual publicado. Alguien puso el archivo de solo lectura <em>debajo</em> del que se puede escribir, porque "es lo mismo pero con menos".</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El de solo lectura hereda la escritura y tiene que rechazarla. Es el mismo síntoma de siempre, pero con una causa distinta y más interesante: aquí <strong>la familia está construida al revés</strong>. Se puso arriba lo que tiene más capacidades, cuando arriba debe ir siempre lo que tienen todos.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Preguntar qué saben hacer <em>todos</em> los archivos. Leer.</li>
+              <li>Poner eso arriba: la familia base es "archivo que se puede leer".</li>
+              <li>Escribir es la capacidad especial que se suma encima, no la que se quita.</li>
+              <li>El archivo de solo lectura pasa a ser el caso normal, no la excepción rota.</li>
+            </ol>
+            <p class="body">Regla para llevarse: cuando un miembro tiene que rechazar algo que heredó, a veces no sobra una promesa — a veces la jerarquía completa está invertida. Lo común va arriba; lo especial se suma.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </article>
+
+  <!-- ============ ISP ============ -->
+
+  <article class="case" id="isp">
+    <div class="case-head">
+      <div class="letter">I</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de segregación de interfaces</p>
+        <h2>No firmes lo que no puedes cumplir</h2>
+        <p class="sub">Trabajadores · impresoras · usuarios · archivos en la nube · multimedia</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué dice, en una frase</p>
+      <p>Una promesa enorme obliga a mentir. <strong>Nadie debería tener que firmar un acuerdo más grande de lo que puede cumplir.</strong></p>
+      <p>Si el acuerdo dice "toda máquina imprime, escanea y envía fax", la impresora que solo imprime tiene que firmarlo igual para poder existir en el sistema. Y entonces finge: cuando le piden escanear, o no hace nada, o directamente falla.</p>
+      <p>El daño real es la confianza. Quien la usa cree que puede pedirle las tres cosas, porque eso es lo que la promesa dice. Se entera de la mentira cuando ya es tarde.</p>
+      <p class="analogy">Un contrato de trabajo que te obliga a firmar tareas que no sabes hacer, solo para poder entrar a la oficina.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span>promesa única: imprimir + escanear + fax</span>
+          <span>máquina grande: cumple las 3</span>
+          <span class="hot">impresora básica: cumple 1, finge 2</span>
+        </div>
+        <p>Quien la usa no puede confiar en la promesa, porque no todos la cumplen de verdad.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">3 promesas separadas: imprimir / escanear / fax</span>
+          <span>máquina grande: firma las 3</span>
+          <span>impresora básica: firma solo imprimir</span>
+        </div>
+        <p>Nadie finge nada. Lo que una pieza promete es exactamente lo que hace.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo aplicarlo, en cualquier lenguaje</p>
+      <ol class="steps">
+        <li>Busca piezas con tareas vacías, o que respondan "eso no lo hago" cuando se las piden. Esa es la señal.</li>
+        <li>Haz la lista de quién usa qué. No lo que los aparatos <em>pueden</em> hacer: lo que las personas y los procesos realmente piden.</li>
+        <li>Agrupa según esa lista. Lo que siempre se pide junto va junto; lo que nunca se pide junto, va separado.</li>
+        <li>Deja que cada pieza firme solo los grupos que cumple de verdad.</li>
+        <li>Haz que cada quien pida el grupo más pequeño que le sirva, no el paquete completo.</li>
+      </ol>
+      <ul class="checks warn">
+        <li>Te pasaste si terminaste con una promesa distinta por cada tarea suelta. Eso hace tanto ruido como el paquete gigante que querías arreglar.</li>
+      </ul>
+    </div>
+
+    <div class="beat">
+      <p class="label">Los cinco ejercicios, a detalle</p>
+      <div class="exercises">
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">01</span><h4>Trabajador humano y robot</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Un sistema de turnos de una fábrica define qué es un "trabajador": alguien que trabaja, come y duerme. Hay trabajadores humanos y también robots en la línea de producción.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El robot trabaja perfectamente, pero ni come ni duerme. Igual tiene que firmar las tres cosas para entrar al sistema, así que deja dos tareas vacías. Y las tareas vacías son peligrosas justamente porque no fallan: el sistema de almuerzos cuenta al robot entre los que van a comer y pide una ración de más, todos los días.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Mirar quién usa qué: el reparto de turnos usa "trabajar"; el comedor usa "comer y dormir".</li>
+              <li>Partir el acuerdo en dos, siguiendo esa división: "trabajar" por un lado, "descansar" por el otro.</li>
+              <li>El robot firma solo el primero. La persona firma los dos.</li>
+              <li>El reparto de turnos acepta a los dos; el comedor solo a quienes descansan.</li>
+            </ol>
+            <p class="body">El robot ya no aparece en la lista del almuerzo, y nadie tuvo que escribir una excepción para él.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">02</span><h4>Impresoras de oficina</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una oficina tiene una máquina multifuncional grande y una impresora básica. El sistema define un solo acuerdo para todas las máquinas: imprimir, escanear y enviar fax.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">La multifuncional cumple las tres. La básica solo imprime, así que las otras dos las rechaza. Cualquier pantalla que ofrezca "escanear con la máquina que elijas" mostrará la impresora básica como opción válida — y fallará cuando alguien la elija.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Tres acuerdos independientes, uno por capacidad.</li>
+              <li>La básica firma imprimir; la multifuncional firma los tres.</li>
+              <li>Quien va a imprimir pide "algo que imprima" y las dos le sirven.</li>
+              <li>Quien va a escanear pide "algo que escanee" y la básica ni siquiera aparece en la lista.</li>
+            </ol>
+            <p class="body">Nadie finge nada, y la pantalla de escaneo ya no puede ofrecer una opción que no funciona.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">03</span><h4>Gestión de usuarios</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Un acuerdo administrativo con cuatro tareas: consultar un usuario, crearlo, editarlo y eliminarlo. Hay una pantalla de administración completa, y también una pantalla pública que solo muestra el perfil de alguien.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">La pantalla que solo consulta queda obligada a firmar el acuerdo entero, incluyendo eliminar usuarios. Aquí el problema no es solo incomodidad: es <strong>seguridad</strong>. Una parte del sistema que solo debería mirar termina cargando la capacidad de borrar, aunque no la use.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Listar quién usa qué. La pantalla pública solo consulta. El administrador consulta, crea, edita y elimina.</li>
+              <li>Agrupar por esa lista, no por tarea: consultar aparte, crear y editar juntos, eliminar aparte.</li>
+              <li>Cada pantalla pide el grupo más pequeño que necesita.</li>
+            </ol>
+            <p class="body">Fíjate en que crear y editar quedaron <em>juntos</em>: siempre se piden juntos, así que separarlos sería exagerar. Este ejercicio enseña la medida correcta — se agrupa por quién lo usa, no por cuántas tareas hay.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">04</span><h4>Almacenamiento en la nube</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Un acuerdo para guardar archivos en la nube: leer, escribir y borrar. Hay carpetas privadas donde se hace todo, y también archivos públicos publicados para que la gente los consulte.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El archivo público, por diseño, <em>solo</em> se lee. No es una limitación técnica que algún día se resolverá: es una regla del negocio, a propósito. Pero al obligarlo a firmar el acuerdo completo, esa regla queda escondida como si fuera un error, y solo se descubre cuando alguien intenta escribir.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Leer, escribir y borrar como tres acuerdos separados.</li>
+              <li>El archivo público firma solo leer. La carpeta privada firma los tres.</li>
+              <li>Quien solo consulta acepta a los dos sin distinguirlos.</li>
+            </ol>
+            <p class="body">La regla del negocio pasa de estar escondida en un error a estar escrita en la promesa, donde cualquiera la lee antes de intentar nada.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">05</span><h4>Dispositivos multimedia</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Un acuerdo para aparatos multimedia: reproducir audio, reproducir video y grabar. Hay un reproductor de música sencillo y también un celular.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El reproductor de música solo hace lo primero, y las otras dos las rechaza. Este ejercicio muestra bien lo arbitrario que fue el agrupamiento: alguien juntó tres capacidades solo porque "todas tienen que ver con multimedia", sin mirar qué aparatos existen ni quién les pide qué.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Un acuerdo por capacidad: audio, video, grabación.</li>
+              <li>El reproductor firma audio. El celular firma los tres.</li>
+              <li>La aplicación de música pide "algo que reproduzca audio" y funciona con ambos, sin saber cuál le tocó.</li>
+            </ol>
+            <p class="body">Y ese es el punto final del principio: quien usa la pieza puede confiar en lo que le prometieron, sin averiguar nada más.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="note"><strong>La medida correcta.</strong> Agrupa por quién lo usa, no por cuántas tareas hay. Si dos cosas siempre se piden juntas, separarlas solo agrega trabajo sin dar nada a cambio.</div>
+    </div>
+  </article>
+
+  <!-- ============ DIP ============ -->
+
+  <article class="case" id="dip">
+    <div class="case-head">
+      <div class="letter">D</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de inversión de dependencias</p>
+        <h2>Pide lo que necesitas, no lo fabriques</h2>
+        <p class="sub">Reportes · registro · órdenes · inventario · clima</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué dice, en una frase</p>
+      <p>Una pieza que tiene reglas importantes <strong>no debería fabricar por dentro las herramientas que usa</strong>. Debería pedirlas y recibirlas ya hechas.</p>
+      <p>Cuando la pieza fabrica su propia herramienta, las dos quedan pegadas para siempre: no puedes cambiarla, no puedes usar otra, y no puedes hacerla funcionar sin la herramienta de verdad.</p>
+      <p class="analogy">Un cocinero que además fabrica su propio horno, ladrillo por ladrillo. Cambiarle el horno significa cambiar al cocinero.</p>
+      <p>La palabra "inversión" viene de darle la vuelta a algo. Normalmente lo importante depende de lo secundario: la regla del negocio depende de la base de datos. Al invertirlo, la regla escribe qué necesita —"algo que sepa guardar esto"— y es la base de datos la que se acomoda a esa descripción. Manda quien tiene las reglas, no la herramienta.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span class="hot">la pieza construye su propia herramienta</span>
+          <span class="plus">cambiar de herramienta = abrir la pieza</span>
+          <span class="plus">probarla exige la herramienta real</span>
+        </div>
+        <p>La regla importante queda amarrada a un detalle técnico que ni siquiera es su tema.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">la pieza pide: "algo que sepa guardar"</span>
+          <span>quien la arma le entrega una</span>
+          <span>la herramienta real · o una de prueba</span>
+        </div>
+        <p>La pieza describe lo que necesita. Quién se lo da es una decisión de afuera.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo aplicarlo, en cualquier lenguaje</p>
+      <ol class="steps">
+        <li>Busca dónde la pieza se construye a sí misma sus herramientas por dentro.</li>
+        <li>Describe en una frase qué necesita de esa herramienta: "que sepa guardar", "que sepa avisar", "que me diga la temperatura".</li>
+        <li>Esa frase es la promesa. Fíjate en el detalle clave: la escribe quien la <em>necesita</em>, no quien la fabrica.</li>
+        <li>Haz que la pieza reciba la herramienta ya hecha, desde afuera, en vez de crearla.</li>
+        <li>Que alguien de más arriba —el arranque del programa— decida cuál se le entrega.</li>
+      </ol>
+      <div class="note"><strong>El beneficio que más se nota.</strong> Poder entregar una herramienta falsa. Así compruebas que la regla funciona sin base de datos, sin internet y sin esperar a que haga frío.</div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Los cinco ejercicios, a detalle</p>
+      <div class="exercises">
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">01</span><h4>Reportes y base de datos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una pieza arma el reporte mensual y lo guarda. Para guardarlo, ella misma construye por dentro la conexión con una base de datos concreta.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Las dos quedan casadas. Si la empresa migra a otra base de datos, hay que abrir la pieza del reporte —que no tiene nada que ver— y operarla. Y mientras tanto, no hay forma de probar que el reporte se arma bien sin tener una base de datos levantada y funcionando.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Describir lo que necesita: "algo que sepa guardar un reporte".</li>
+              <li>Que la pieza reciba ese algo desde afuera en vez de construirlo.</li>
+              <li>Que el arranque del programa decida cuál base de datos se entrega.</li>
+            </ol>
+            <p class="body">Migrar de base de datos pasa a ser entregarle otra cosa. La pieza del reporte no se abre nunca.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">02</span><h4>Aviso al registrarse</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Cuando alguien se registra, el sistema le manda un correo de bienvenida. La pieza del registro fabrica por dentro el enviador de correos.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Si mañana el aviso debe ir por mensaje de texto, hay que abrir la pieza del registro, que no debería tener opinión sobre canales de comunicación. Y cada prueba del registro manda correos de verdad, a personas de verdad.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Describir lo que necesita: "algo que sepa enviar mensajes".</li>
+              <li>Recibirlo desde afuera; el canal se decide en el arranque.</li>
+              <li>Para probar, entregarle un enviador falso que solo anota lo que habría enviado.</li>
+            </ol>
+            <p class="body">Este ejercicio se parece mucho al primero de la letra O, y con razón: casi siempre se usan juntas. La diferencia exacta está en la nota del final de esta sección.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">03</span><h4>Órdenes y pagos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">La pieza que cierra la compra crea por dentro la conexión con la pasarela de pagos con tarjeta.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">La tienda entera queda amarrada a un proveedor. Y este caso duele más que los otros porque es una decisión comercial, no técnica: cuando ese proveedor suba sus comisiones, cambiarlo debería ser una negociación, no una cirugía en el código. Además, ninguna prueba de compra se puede hacer sin tocar una pasarela real.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Describir lo que necesita: "algo que sepa cobrar un monto".</li>
+              <li>Recibir la pasarela desde afuera.</li>
+              <li>Que el arranque decida cuál proveedor se usa hoy.</li>
+            </ol>
+            <p class="body">Cambiar de proveedor pasa a ser una decisión de negocio que se ejecuta en un solo sitio.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">04</span><h4>Registro de eventos</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">La pieza que descuenta inventario deja constancia de cada movimiento, y escribe esos mensajes directo a un archivo.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">El inventario no debería tener ninguna opinión sobre dónde se guardan los mensajes. Es un detalle que le impusieron. El día que la empresa quiera mandar esos registros a un servicio central para vigilarlos, hay que abrir el inventario para cambiar algo que no es su tema.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Describir lo que necesita: "algo que sepa registrar mensajes".</li>
+              <li>Recibirlo desde afuera.</li>
+              <li>El destino —archivo, pantalla, servicio externo— se elige en el arranque y puede cambiar sin tocar el inventario.</li>
+            </ol>
+            <p class="body">Es el ejercicio más pequeño de los cinco, y por eso el mejor para ver el patrón limpio, sin ruido alrededor.</p>
+          </div>
+        </div>
+
+        <div class="ex">
+          <div class="ex-title"><span class="n">05</span><h4>Recomendación según el clima</h4></div>
+          <div class="ex-step">
+            <p class="mini c">El caso</p>
+            <p class="body">Una pieza recomienda qué ropa usar: si hace más de 25 grados sugiere ropa ligera, si no, sugiere llevar chaqueta. Para saber la temperatura consulta directamente un servicio de clima por internet.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini p">Qué falla</p>
+            <p class="body">Para comprobar que la recomendación de "lleva chaqueta" funciona, habría que <em>esperar a que haga frío de verdad</em>. Sin internet no se puede probar nada. Y si el servicio externo cambia o se cae, la regla de negocio —que es de la empresa, no del proveedor— se cae con él.</p>
+          </div>
+          <div class="ex-step">
+            <p class="mini s">Cómo se resuelve</p>
+            <ol class="micro">
+              <li>Describir lo que necesita: "algo que me diga la temperatura actual".</li>
+              <li>En producción, recibir el servicio de clima real.</li>
+              <li>Para probar, recibir una fuente controlada que siempre responde 12 grados.</li>
+              <li>Comprobar los dos casos —calor y frío— en segundos, sin internet.</li>
+            </ol>
+            <p class="body">Este es el ejercicio donde el beneficio se ve más claro de todo el curso: lo que antes dependía del clima ahora se comprueba cuando uno quiera.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="note"><strong>¿En qué se diferencia de la letra O?</strong> Se parecen mucho porque casi siempre van juntas. La O responde <em>"¿cómo agrego una variante sin romper nada?"</em>. La D responde <em>"¿quién decide cuál variante se usa?"</em> — y su respuesta es: no la pieza que la usa, sino alguien de afuera.</div>
+    </div>
+  </article>
+
+  <!-- ============ cierre ============ -->
+
+  <section class="prose">
+    <h2>Las cinco, en una tabla</h2>
+    <p>En la práctica no vas a recordar los nombres, y no importa. Vas a reconocer los síntomas. Esta tabla es para eso: se lee de izquierda a derecha cuando algo huele raro.</p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Lo que ves</th><th>Lo que significa</th><th>Regla</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Una pieza que hace de todo, y cambiarla por un motivo rompe algo que no tenía relación</td>
+            <td>Hay varias responsabilidades revueltas en el mismo sitio</td>
+            <td>S</td>
+          </tr>
+          <tr>
+            <td>Una lista de preguntas que crece cada vez que aparece un caso nuevo</td>
+            <td>Estás modificando lo que ya funcionaba en vez de sumar algo aparte</td>
+            <td>O</td>
+          </tr>
+          <tr>
+            <td>Preguntas del tipo "¿de qué tipo eres?" antes de usar algo</td>
+            <td>La familia prometió algo que no todos sus miembros cumplen</td>
+            <td>L</td>
+          </tr>
+          <tr>
+            <td>Piezas con tareas vacías o que dicen "eso no lo hago"</td>
+            <td>Las obligaste a firmar una promesa más grande de lo que cumplen</td>
+            <td>I</td>
+          </tr>
+          <tr>
+            <td>No puedes probar algo sin la base de datos, sin internet o sin el proveedor real</td>
+            <td>La pieza fabrica sus herramientas por dentro en vez de pedirlas</td>
+            <td>D</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>La advertencia que importa.</strong> Ninguna de estas reglas dice "separa todo siempre". Cada separación tiene un costo: más piezas que entender, más nombres que recordar, más archivos que abrir. El ejercicio del rectángulo está en el curso justamente para eso. Separa cuando la variación ya existe, cuando dos áreas distintas empujan la misma pieza, o cuando alguien está fingiendo cumplir una promesa. Si no, déjalo simple.</div>
+  </section>
+
+  <footer>
+    Material de apoyo · Riwi — Principios SOLID. Los 25 ejercicios del curso, resueltos y explicados sin sintaxis de ningún lenguaje.
+  </footer>
+
+</div>
+</body>
+</html>
