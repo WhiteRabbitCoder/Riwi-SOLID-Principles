@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OCP, ISP y LSP sin código</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;800&family=IBM+Plex+Mono:wght@500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+
+<style>
+  :root {
+    --bg:        #E7ECF1;
+    --surface:   #FDFEFF;
+    --surface-2: #F1F5F8;
+    --ink:       #0E1A26;
+    --muted:     #55697C;
+    --rule:      #C3D0DC;
+    --accent:    #14549B;
+    --accent-soft:#DCE8F5;
+    --bad:       #A33520;
+    --bad-soft:  #F6E3DE;
+    --good:      #14705A;
+    --good-soft: #DDEFE8;
+    --shadow:    0 1px 2px rgba(14, 26, 38, .06), 0 8px 24px rgba(14, 26, 38, .05);
+
+    --step--1: clamp(.82rem, .8rem + .1vw, .88rem);
+    --step-0:  clamp(1.02rem, .99rem + .16vw, 1.14rem);
+    --step-1:  clamp(1.22rem, 1.15rem + .34vw, 1.45rem);
+    --step-2:  clamp(1.5rem, 1.35rem + .7vw, 2rem);
+    --step-3:  clamp(2rem, 1.66rem + 1.6vw, 3.1rem);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:        #0C131A;
+      --surface:   #141F2A;
+      --surface-2: #1B2836;
+      --ink:       #E5EDF5;
+      --muted:     #93A6B8;
+      --rule:      #2A3B4C;
+      --accent:    #74AEEC;
+      --accent-soft:#1A2E44;
+      --bad:       #E5947C;
+      --bad-soft:  #33211C;
+      --good:      #5FC7A4;
+      --good-soft: #16302A;
+      --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg:        #0C131A;
+    --surface:   #141F2A;
+    --surface-2: #1B2836;
+    --ink:       #E5EDF5;
+    --muted:     #93A6B8;
+    --rule:      #2A3B4C;
+    --accent:    #74AEEC;
+    --accent-soft:#1A2E44;
+    --bad:       #E5947C;
+    --bad-soft:  #33211C;
+    --good:      #5FC7A4;
+    --good-soft: #16302A;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .3);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: var(--step-0);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 46rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 3.5rem) clamp(1.1rem, 4vw, 2rem) 5rem;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(2.5rem, 6vw, 4rem);
+  }
+
+  h1, h2, h3, .eyebrow, .label, .btn {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  h1 { font-size: var(--step-3); font-weight: 800; line-height: 1.02; letter-spacing: -.025em; margin: 0; text-wrap: balance; }
+  h2 { font-size: var(--step-2); font-weight: 800; line-height: 1.1; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  h3 { font-size: var(--step-1); font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+  p  { margin: 0; }
+
+  .eyebrow {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  /* ---------- portada ---------- */
+
+  .hero { display: flex; flex-direction: column; gap: 1.1rem; }
+  .hero p.lede { font-size: var(--step-1); color: var(--muted); max-width: 34ch; }
+  .hero .meta { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: .9rem; }
+
+  /* ---------- bloques de texto ---------- */
+
+  .prose { display: flex; flex-direction: column; gap: 1rem; }
+
+  .glossary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .glossary div { background: var(--surface); padding: 1rem 1.05rem; display: flex; flex-direction: column; gap: .3rem; }
+  .glossary dt { font-family: Archivo, sans-serif; font-weight: 600; font-size: var(--step--1); letter-spacing: .02em; }
+  .glossary dd { margin: 0; font-size: var(--step--1); color: var(--muted); line-height: 1.5; }
+
+  /* ---------- caso por principio ---------- */
+
+  .case { display: flex; flex-direction: column; gap: 1.6rem; }
+
+  .case-head {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 1.1rem;
+    padding-bottom: 1.2rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .letter {
+    font-family: Archivo, sans-serif;
+    font-weight: 800;
+    font-size: clamp(3rem, 9vw, 4.6rem);
+    line-height: .8;
+    color: var(--accent);
+    letter-spacing: -.05em;
+  }
+  .case-head .titles { display: flex; flex-direction: column; gap: .3rem; }
+
+  .beat { display: flex; flex-direction: column; gap: .7rem; }
+  .beat > .label {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+  .beat > .label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+
+  /* ---------- antes / después ---------- */
+
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+  }
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 1.1rem 1.15rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: .75rem;
+    box-shadow: var(--shadow);
+  }
+  .panel .tag {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .72rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    padding: .2rem .5rem;
+    border-radius: 3px;
+    align-self: flex-start;
+  }
+  .panel.before .tag { background: var(--bad-soft); color: var(--bad); }
+  .panel.after  .tag { background: var(--good-soft); color: var(--good); }
+  .panel p { font-size: var(--step--1); color: var(--muted); line-height: 1.55; }
+
+  .flow { display: flex; flex-direction: column; gap: .4rem; font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .78rem; line-height: 1.45; }
+  .flow span { padding: .4rem .6rem; border-radius: 3px; background: var(--surface-2); border-left: 3px solid var(--rule); }
+  .panel.before .flow span.hot { background: var(--bad-soft); border-left-color: var(--bad); color: var(--bad); }
+  .panel.after  .flow span.cool { background: var(--good-soft); border-left-color: var(--good); color: var(--good); }
+  .flow span.plus { border-left-style: dashed; color: var(--muted); }
+
+  /* ---------- pasos ---------- */
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: .85rem; }
+  ol.steps li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 1.7rem 1fr;
+    gap: .85rem;
+    align-items: baseline;
+  }
+  ol.steps li::before {
+    content: counter(s);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 3px;
+    text-align: center;
+    padding: .15rem 0;
+  }
+
+  ul.checks { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+  ul.checks li { display: grid; grid-template-columns: 1.1rem 1fr; gap: .7rem; align-items: baseline; font-size: var(--step--1); }
+  ul.checks li::before { content: "✓"; color: var(--good); font-weight: 700; }
+  ul.checks.warn li::before { content: "✗"; color: var(--bad); }
+
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    padding: .9rem 1.1rem;
+    border-radius: 0 4px 4px 0;
+    font-size: var(--step--1);
+    line-height: 1.55;
+  }
+  .note strong { font-family: Archivo, sans-serif; font-weight: 600; }
+
+  .analogy {
+    font-size: var(--step-1);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--ink);
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: 1.1rem 0;
+    max-width: 32ch;
+  }
+
+  /* ---------- tabla final ---------- */
+
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; min-width: 30rem; font-size: var(--step--1); }
+  th, td { text-align: left; padding: .7rem .9rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  th { font-family: Archivo, sans-serif; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; font-size: .72rem; color: var(--muted); }
+  td:last-child { font-family: Archivo, sans-serif; font-weight: 600; white-space: nowrap; }
+
+  footer { font-size: var(--step--1); color: var(--muted); border-top: 1px solid var(--rule); padding-top: 1.2rem; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    a, summary { transition: color .15s ease; }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <p class="eyebrow">Riwi · Diseño de software</p>
+    <h1>OCP, ISP y LSP sin código</h1>
+    <p class="lede">Tres reglas para armar cosas que se puedan cambiar sin romperlas. Explicadas con ejemplos, no con programación.</p>
+    <p class="meta">Para leer de principio a fin · unos 12 minutos · no hace falta saber programar</p>
+  </header>
+
+  <section class="prose">
+    <h2>Antes de empezar: cuatro palabras</h2>
+    <p>Todo lo que sigue usa solo estas cuatro ideas. No hay más vocabulario en toda la página.</p>
+    <dl class="glossary">
+      <div>
+        <dt>Pieza</dt>
+        <dd>Algo que hace un trabajo concreto: "enviar un correo", "cobrar con tarjeta", "imprimir una hoja".</dd>
+      </div>
+      <div>
+        <dt>Promesa</dt>
+        <dd>Lo que una pieza garantiza que sabe hacer. Es un acuerdo: "yo sé enviar un mensaje".</dd>
+      </div>
+      <div>
+        <dt>Quien la usa</dt>
+        <dd>Otra parte del sistema que le pide algo a la pieza confiando en su promesa.</dd>
+      </div>
+      <div>
+        <dt>Variación</dt>
+        <dd>Lo que cambia de un caso a otro. El aviso siempre se envía; lo que cambia es por dónde.</dd>
+      </div>
+    </dl>
+    <p>Un <strong>principio de diseño</strong> no es una regla técnica ni una ley. Es un consejo probado sobre cómo repartir el trabajo entre las piezas, para que mañana puedas cambiar una cosa sin tener que tocar otras diez.</p>
+  </section>
+
+  <!-- ============ OCP ============ -->
+
+  <article class="case">
+    <div class="case-head">
+      <div class="letter">O</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de abierto/cerrado</p>
+        <h2>Agregar sin volver a tocar</h2>
+        <p style="color: var(--muted); font-size: var(--step--1);">Ejercicio: los avisos de una tienda</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">La situación</p>
+      <p>Una tienda avisa al cliente cuando su pedido queda listo. Hoy el aviso sale por correo o por mensaje de texto. La persona que atiende elige cuál.</p>
+      <p>El sistema tiene una sola instrucción encargada de avisar, y esa instrucción decide preguntando: <em>¿el canal es correo? entonces manda un correo. ¿es mensaje de texto? entonces manda un mensaje.</em></p>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué se rompe</p>
+      <p>Llega WhatsApp. Para agregarlo hay que <strong>abrir la instrucción que ya funcionaba</strong> y meterle otra pregunta. Luego llega la notificación del celular: otra pregunta más. Y otra.</p>
+      <p>Cada vez que abres algo que ya servía, puedes romperlo sin darte cuenta. La lista de preguntas crece, nadie la entiende completa, y probar que todo sigue bien cuesta más cada vez.</p>
+      <p class="analogy">Es como tener una sola llave a la que le vas limando dientes nuevos cada vez que aparece una puerta.</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">La idea que lo arregla</p>
+      <p>Separa <strong>lo que siempre pasa</strong> de <strong>lo que cambia</strong>. Lo que siempre pasa: avisarle al cliente. Lo que cambia: el canal.</p>
+      <p>Entonces defines una promesa: <em>"cualquier cosa que quiera llamarse avisador tiene que saber enviar un mensaje"</em>. Correo la cumple. Mensaje de texto la cumple. WhatsApp la cumple.</p>
+      <p>Y quien coordina el aviso deja de preguntar por el canal. Solo dice: <em>"toma este mensaje y envíalo"</em>. Ni sabe ni le importa quién lo recibe.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span class="hot">¿es correo? → mándalo por correo</span>
+          <span class="hot">¿es texto? → mándalo por texto</span>
+          <span class="plus">+ WhatsApp: abrir esto y editarlo</span>
+        </div>
+        <p>Una pieza que lo sabe todo y crece sin parar. Agregar = modificar lo que ya funcionaba.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">coordinador → "envía este mensaje"</span>
+          <span>avisador por correo</span>
+          <span>avisador por texto</span>
+          <span class="plus">+ WhatsApp: pieza nueva, nada se edita</span>
+        </div>
+        <p>Piezas independientes que cumplen la misma promesa. Agregar = sumar una pieza.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo hacerlo, en cualquier cosa</p>
+      <ol class="steps">
+        <li>Busca la instrucción que crece con preguntas encadenadas. Esa es la señal.</li>
+        <li>Pregúntate qué es lo que en realidad cambia entre una pregunta y otra. Ponle nombre: aquí es "el canal del aviso".</li>
+        <li>Escribe la promesa mínima que todos los casos pueden cumplir. Aquí: "sé enviar un mensaje". Nada más.</li>
+        <li>Convierte cada rama en una pieza aparte que cumpla esa promesa.</li>
+        <li>Deja que quien coordina reciba la pieza ya elegida, en vez de elegirla él mismo.</li>
+      </ol>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo saber que funcionó</p>
+      <ul class="checks">
+        <li>Agregas un canal nuevo creando algo nuevo, sin editar nada viejo.</li>
+        <li>Quien coordina el aviso no menciona por su nombre a ningún canal.</li>
+        <li>Puedes borrar un canal y el resto sigue igual.</li>
+      </ul>
+      <div class="note"><strong>Cuándo NO aplicarlo.</strong> Si de verdad solo va a existir un caso y nunca habrá otro, esta separación sobra. El principio sirve cuando la variación es real, no imaginada.</div>
+    </div>
+  </article>
+
+  <!-- ============ ISP ============ -->
+
+  <article class="case">
+    <div class="case-head">
+      <div class="letter">I</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de segregación de interfaces</p>
+        <h2>No firmes lo que no puedes cumplir</h2>
+        <p style="color: var(--muted); font-size: var(--step--1);">Ejercicio: las impresoras de una oficina</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">La situación</p>
+      <p>Una oficina tiene aparatos de impresión. Alguien decidió que todos cumplen la misma promesa: <em>"toda máquina imprime, escanea y envía fax"</em>.</p>
+      <p>La máquina grande sí hace las tres cosas. Pero también hay una impresora básica que solo imprime.</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué se rompe</p>
+      <p>La impresora básica se vio obligada a firmar una promesa que no puede cumplir. Así que finge: cuando le piden escanear, o no hace nada, o directamente falla.</p>
+      <p>El daño real es la confianza. Quien la usa cree que puede pedirle cualquiera de las tres cosas, porque eso es lo que la promesa dice. Se entera de la mentira cuando ya es tarde.</p>
+      <p class="analogy">Es un contrato de trabajo que te obliga a firmar tareas que no sabes hacer, para poder entrar a la oficina.</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">La idea que lo arregla</p>
+      <p>Una promesa enorme obliga a mentir. Pártela en <strong>capacidades pequeñas e independientes</strong>: saber imprimir, saber escanear, saber enviar fax.</p>
+      <p>Ahora cada aparato firma solo lo que de verdad cumple. La impresora básica firma imprimir. La máquina grande firma las tres.</p>
+      <p>Y quien necesita algo pide solo esa capacidad. Si vas a imprimir, pides "algo que imprima" — y las dos sirven. Si vas a escanear, pides "algo que escanee" — y la básica ni aparece en la conversación.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span>promesa única: imprimir + escanear + fax</span>
+          <span>máquina grande: cumple las 3</span>
+          <span class="hot">impresora básica: cumple 1, finge 2</span>
+        </div>
+        <p>Quien la usa no puede confiar en la promesa, porque no todos la cumplen de verdad.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">3 promesas separadas: imprimir / escanear / fax</span>
+          <span>máquina grande: firma las 3</span>
+          <span>impresora básica: firma solo imprimir</span>
+        </div>
+        <p>Nadie finge nada. Lo que una pieza promete es exactamente lo que hace.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo hacerlo, en cualquier cosa</p>
+      <ol class="steps">
+        <li>Busca piezas que tengan tareas vacías, o que respondan "eso no lo hago" cuando se las piden. Esa es la señal.</li>
+        <li>Haz la lista de quién usa qué. No lo que los aparatos pueden hacer: lo que las personas y los procesos realmente piden.</li>
+        <li>Agrupa según esa lista. Las tareas que siempre se piden juntas van juntas; las que nunca, van separadas.</li>
+        <li>Deja que cada pieza firme solo los grupos que cumple de verdad.</li>
+        <li>Haz que cada quien pida el grupo más pequeño que le sirva, no el paquete completo.</li>
+      </ol>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo saber que funcionó</p>
+      <ul class="checks">
+        <li>Ninguna pieza tiene tareas vacías ni tareas que fallan a propósito.</li>
+        <li>Puedes leer lo que una pieza promete y creerle sin revisar cómo está hecha.</li>
+      </ul>
+      <ul class="checks warn">
+        <li>Te pasaste si terminaste con una promesa distinta por cada tarea suelta. Eso es tanto ruido como el paquete gigante.</li>
+      </ul>
+      <div class="note"><strong>La medida correcta.</strong> Agrupa por quién lo usa, no por cuántas tareas hay. Si dos cosas siempre se piden juntas, separarlas solo agrega trabajo.</div>
+    </div>
+  </article>
+
+  <!-- ============ LSP ============ -->
+
+  <article class="case">
+    <div class="case-head">
+      <div class="letter">L</div>
+      <div class="titles">
+        <p class="eyebrow">Principio de sustitución de Liskov</p>
+        <h2>Si prometes por todos, cúmplelo por todos</h2>
+        <p style="color: var(--muted); font-size: var(--step--1);">Ejercicio: las aves</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">La situación</p>
+      <p>Un sistema agrupa piezas en familias: hay una idea general de "ave", y debajo están el gorrión, el águila, el pingüino.</p>
+      <p>La idea general dice: <em>"toda ave vuela"</em>. Suena razonable. Cualquiera que reciba un ave puede pedirle que vuele.</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">Qué se rompe</p>
+      <p>Llega el pingüino. Es un ave — pertenece a la familia — pero no vuela. Cuando alguien le pide volar, falla.</p>
+      <p>Lo grave no es el pingüino. Es que la promesa era mentira desde el principio. Quien recibe "un ave" ya no puede confiar en lo que le dijeron, y termina teniendo que preguntar <em>"oye, ¿tú de casualidad eres pingüino?"</em> antes de pedir nada. Esa pregunta se repite en cada rincón del sistema, y hay que agregarla otra vez con cada ave rara que aparezca.</p>
+      <p class="analogy">Un juego de llaves maestras que abre todas las puertas del edificio. Menos una. ¿De qué te sirve ahora la palabra "maestra"?</p>
+    </div>
+
+    <div class="beat">
+      <p class="label">La idea que lo arregla</p>
+      <p>La regla es simple: <strong>la promesa de la familia solo puede incluir lo que absolutamente todos sus miembros cumplen.</strong> Si uno solo no puede, no era una promesa de la familia.</p>
+      <p>Volar no es parte de ser ave. Es una capacidad extra que algunas tienen. Entonces "ave" promete lo que todas cumplen — desplazarse, alimentarse — y volar pasa a ser una promesa aparte que firman el gorrión y el águila, pero no el pingüino.</p>
+      <p>Ahora quien necesita algo que vuele pide directamente "algo que vuele". El pingüino nunca llega ahí, y nadie tiene que preguntarle qué es.</p>
+    </div>
+
+    <div class="compare">
+      <div class="panel before">
+        <span class="tag">Antes</span>
+        <div class="flow">
+          <span>familia "ave" promete: volar</span>
+          <span>gorrión: vuela ✓</span>
+          <span class="hot">pingüino: falla al intentarlo</span>
+          <span class="plus">quien la usa debe preguntar "¿qué eres?"</span>
+        </div>
+        <p>La familia promete de más. La excepción contamina a todo el que use la familia.</p>
+      </div>
+      <div class="panel after">
+        <span class="tag">Después</span>
+        <div class="flow">
+          <span class="cool">familia "ave" promete: desplazarse</span>
+          <span>promesa aparte: volar</span>
+          <span>gorrión: ave + vuela</span>
+          <span>pingüino: ave (y ya)</span>
+        </div>
+        <p>Cualquier miembro sirve donde se pide la familia. Sin excepciones y sin preguntas.</p>
+      </div>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo hacerlo, en cualquier cosa</p>
+      <ol class="steps">
+        <li>Escribe en una frase qué promete la familia. Si no puedes escribirla, ese ya es el problema.</li>
+        <li>Recorre uno por uno los miembros y pregunta: <em>¿este cumple la frase completa, siempre?</em></li>
+        <li>Al primer "sí, pero…", encontraste la promesa que sobra.</li>
+        <li>Sácala de la familia y conviértela en una capacidad aparte que se firma por separado.</li>
+        <li>Haz que quien necesitaba esa capacidad la pida por su nombre, en vez de pedir la familia entera y cruzar los dedos.</li>
+      </ol>
+    </div>
+
+    <div class="beat">
+      <p class="label">Cómo saber que funcionó</p>
+      <ul class="checks">
+        <li>Cambias un miembro de la familia por cualquier otro y nada se rompe.</li>
+        <li>Nadie necesita preguntar "¿de qué tipo eres?" antes de usar una pieza.</li>
+        <li>Ninguna pieza responde "eso no lo puedo hacer" a algo que su familia prometió.</li>
+      </ul>
+      <div class="note"><strong>Ojo con la trampa fácil.</strong> Atrapar el error y callarlo no arregla nada: la promesa sigue siendo falsa, solo que ahora en silencio. Hay que corregir la promesa, no esconder el incumplimiento.</div>
+    </div>
+  </article>
+
+  <!-- ============ cierre ============ -->
+
+  <section class="prose">
+    <h2>Los tres, en una idea</h2>
+    <p>Las tres reglas hablan de lo mismo desde ángulos distintos: <strong>una promesa clara, que se pueda cumplir, y que no obligue a reabrir lo que ya funciona.</strong></p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Lo que ves</th><th>Lo que significa</th><th>Regla</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Una lista de preguntas que crece cada vez que aparece un caso nuevo</td>
+            <td>Estás modificando lo que ya funcionaba en vez de sumar algo aparte</td>
+            <td>OCP</td>
+          </tr>
+          <tr>
+            <td>Piezas con tareas vacías o que dicen "eso no lo hago"</td>
+            <td>Las obligaste a firmar una promesa más grande de lo que cumplen</td>
+            <td>ISP</td>
+          </tr>
+          <tr>
+            <td>Preguntas del tipo "¿de qué tipo eres?" antes de usar algo</td>
+            <td>La familia prometió algo que no todos sus miembros cumplen</td>
+            <td>LSP</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note"><strong>La advertencia que importa.</strong> Ninguna de estas reglas dice "separa todo siempre". Cada separación tiene un costo: más piezas que entender y que nombrar. Sepáralo cuando la variación ya existe o cuando alguien está fingiendo cumplir una promesa. Si no, déjalo simple.</div>
+  </section>
+
+  <footer>
+    Material de apoyo · Riwi — Principios SOLID. Los ejercicios de esta página corresponden a los avisos (OCP), las impresoras (ISP) y las aves (LSP).
+  </footer>
+
+</div>
+</body>
+</html>

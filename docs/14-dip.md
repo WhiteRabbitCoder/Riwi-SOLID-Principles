@@ -1,4 +1,4 @@
-# 13 — Dependency Inversion Principle (DIP)
+# 14 — Dependency Inversion Principle (DIP)
 
 ## Idea central
 

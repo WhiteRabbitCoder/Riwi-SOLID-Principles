@@ -1,4 +1,4 @@
-# 15 — Proyecto integrador: tienda por consola
+# 16 — Proyecto integrador: tienda por consola
 
 ## Contexto
 
