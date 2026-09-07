@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 800" width="1260" height="800" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/>
+    </marker>
+    <marker id="arrowDash" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8"/>
+    </marker>
+    <style>
+      .t   { fill:#0f172a; }
+      .mut { fill:#64748b; }
+      .mono{ font-family: Consolas, "Courier New", monospace; }
+      .hdr { font-size:15px; font-weight:700; letter-spacing:.5px; }
+      .sub { font-size:12px; }
+      .flow{ stroke:#334155; stroke-width:2; fill:none; marker-end:url(#arrow); }
+      .wire{ stroke:#94a3b8; stroke-width:1.6; stroke-dasharray:5 4; fill:none; marker-end:url(#arrowDash); }
+    </style>
+  </defs>
+
+  <rect width="1260" height="800" fill="#ffffff"/>
+
+  <text x="630" y="38" text-anchor="middle" class="t" font-size="23" font-weight="700">Arquitectura hexagonal — solución del caso «crear pedido»</text>
+  <text x="630" y="62" text-anchor="middle" class="mut" font-size="14">Todas las flechas de dependencia apuntan HACIA ADENTRO: el núcleo no conoce a nadie; los adaptadores conocen los puertos.</text>
+
+  <text x="150" y="146" text-anchor="middle" class="t hdr">IN · LADO QUE LLAMA</text>
+  <text x="150" y="166" text-anchor="middle" class="mut sub">driving / primarios — inician la conversación</text>
+  <text x="1050" y="146" text-anchor="middle" class="t hdr">OUT · LADO LLAMADO</text>
+  <text x="1050" y="166" text-anchor="middle" class="mut sub">driven / secundarios — el núcleo los invoca</text>
+
+  <polygon points="780,330 665,529.2 435,529.2 320,330 435,130.8 665,130.8" fill="#dbeafe" stroke="#2563eb" stroke-width="2.5"/>
+  <text x="550" y="162" text-anchor="middle" class="t" font-size="13" font-weight="700">APLICACIÓN</text>
+  <text x="550" y="181" text-anchor="middle" class="t mono" font-size="13">CreateOrderService</text>
+  <text x="480" y="562" text-anchor="middle" class="mut" font-size="12">solo orquesta: crear → cobrar → guardar → notificar (0 println)</text>
+
+  <polygon points="700,330 625,459.9 475,459.9 400,330 475,200.1 625,200.1" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+  <text x="550" y="288" text-anchor="middle" class="t" font-size="13" font-weight="700">DOMINIO</text>
+  <text x="550" y="312" text-anchor="middle" class="t mono" font-size="13">Order</text>
+  <text x="550" y="332" text-anchor="middle" class="t mono" font-size="13">PriceList</text>
+  <text x="550" y="352" text-anchor="middle" class="t mono" font-size="13">InvalidOrderException</text>
+  <text x="550" y="378" text-anchor="middle" class="mut" font-size="11">reglas puras · cero imports hacia afuera</text>
+
+  <rect x="240" y="308" width="170" height="44" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="325" y="325" text-anchor="middle" class="mut" font-size="10" font-weight="700">PUERTO IN</text>
+  <text x="325" y="342" text-anchor="middle" class="t mono" font-size="12">CreateOrderUseCase</text>
+
+  <rect x="640" y="190" width="210" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="745" y="215" text-anchor="middle" class="t mono" font-size="12">PaymentGatewaySelector</text>
+  <rect x="640" y="260" width="210" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="745" y="285" text-anchor="middle" class="t mono" font-size="12">PaymentGateway</text>
+  <rect x="640" y="360" width="210" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="745" y="385" text-anchor="middle" class="t mono" font-size="12">OrderRepository</text>
+  <rect x="640" y="430" width="210" height="40" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="745" y="455" text-anchor="middle" class="t mono" font-size="12">NotificationSender</text>
+  <text x="770" y="560" text-anchor="middle" class="mut" font-size="11">PUERTOS OUT · un método cada uno</text>
+
+  <rect x="40" y="205" width="220" height="66" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="150" y="228" text-anchor="middle" class="t mono" font-size="12.5">OrderConsoleAdapter</text>
+  <text x="150" y="246" text-anchor="middle" class="mut" font-size="11">única clase que habla</text>
+  <text x="150" y="261" text-anchor="middle" class="mut" font-size="11">con la terminal</text>
+
+  <rect x="40" y="390" width="220" height="66" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="150" y="413" text-anchor="middle" class="t mono" font-size="12.5">CreateOrderServiceCheck</text>
+  <text x="150" y="431" text-anchor="middle" class="mut" font-size="11">la prueba también es</text>
+  <text x="150" y="446" text-anchor="middle" class="mut" font-size="11">un adaptador de entrada</text>
+
+  <path class="flow" d="M 262 250 L 296 312"/>
+  <path class="flow" d="M 262 410 L 296 350"/>
+
+  <rect x="890" y="187" width="330" height="46" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="1055" y="205" text-anchor="middle" class="t mono" font-size="12.5">MapPaymentGatewaySelector</text>
+  <text x="1055" y="223" text-anchor="middle" class="mut" font-size="11">el if de «CARD» vive aquí, no en el núcleo</text>
+
+  <rect x="890" y="250" width="330" height="60" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="1055" y="270" text-anchor="middle" class="t mono" font-size="12.5">CardPaymentGateway</text>
+  <text x="1055" y="288" text-anchor="middle" class="t mono" font-size="12.5">CashPaymentGateway</text>
+  <text x="1055" y="304" text-anchor="middle" class="mut" font-size="11">sumar PSE = una clase más (OCP)</text>
+
+  <rect x="890" y="357" width="330" height="46" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="1055" y="375" text-anchor="middle" class="t mono" font-size="12.5">InMemoryOrderRepository</text>
+  <text x="1055" y="393" text-anchor="middle" class="mut" font-size="11">cambiar a JPA no toca el caso de uso</text>
+
+  <rect x="890" y="427" width="330" height="46" rx="10" fill="#ffe4e6" stroke="#e11d48" stroke-width="2"/>
+  <text x="1055" y="445" text-anchor="middle" class="t mono" font-size="12.5">ConsoleNotificationSender</text>
+  <text x="1055" y="463" text-anchor="middle" class="mut" font-size="11">mañana SmtpNotificationSender</text>
+
+  <path class="flow" d="M 888 210 L 854 210"/>
+  <path class="flow" d="M 888 280 L 854 280"/>
+  <path class="flow" d="M 888 380 L 854 380"/>
+  <path class="flow" d="M 888 450 L 854 450"/>
+  <text x="873" y="330" text-anchor="middle" class="mut" font-size="11" transform="rotate(-90 873 330)">implementan</text>
+
+  <rect x="300" y="600" width="660" height="120" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+  <text x="630" y="626" text-anchor="middle" class="t" font-size="13" font-weight="700">PUNTO DE COMPOSICIÓN</text>
+  <text x="630" y="648" text-anchor="middle" class="t mono" font-size="13">OrderApplication.main()</text>
+  <text x="630" y="672" text-anchor="middle" class="mut" font-size="12">único archivo que hace new de infraestructura y decide qué implementación entra en cada puerto</text>
+  <text x="630" y="694" text-anchor="middle" class="mut" font-size="12">conoce a todos · nadie lo conoce a él · cambiar de consola a correo = una línea aquí</text>
+  <text x="630" y="712" text-anchor="middle" class="mut" font-size="11">CreateOrderServiceCheck hace lo mismo, pero inyectando dobles</text>
+
+  <path class="wire" d="M 300 650 L 190 650 L 150 462"/>
+  <path class="wire" d="M 960 650 L 1055 650 L 1055 480"/>
+</svg>
